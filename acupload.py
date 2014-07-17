@@ -25,46 +25,46 @@ def check_upload(source_id):
     str2Hash = 'cfflashformatjsonran0.7214574650861323uu2d8c027396ver2.1vu' + source_id + 'bie^#@(%27eib58'
     sign = hashlib.md5(str2Hash.encode('utf-8')).hexdigest()
     request_info = urllib.request.Request('http://api.letvcloud.com/gpc.php?&sign='+sign+'&cf=flash&vu='+source_id+'&ver=2.1&ran=0.7214574650861323&qr=2&format=json&uu=2d8c027396')
-    response = urllib.request.urlopen(request_info)
-    data = response.read()
-    print(json.loads(data.decode('utf-8'))['message'])
+    try:
+        response = urllib.request.urlopen(request_info)
+        data = response.read()
+        return json.loads(data.decode('utf-8'))['message']
+    except:
+        return 'Cannot check '+source_id+' !'
 
 
 #----------------------------------------------------------------------
 def upload(file2Upload):
     """"""
-    #Get filename
-    filename = file2Upload.split('/')[-1].strip()
-    #print(filename)
-    if not os.path.isfile(file2Upload):
-        print('Not file!')
-        exit()
-    
-    #Calculate Filesize
-    filesize = os.path.getsize(file2Upload)
-    #print(filesize)
-    
     #Read Cookie.....Damn it I didn't have my supper!
     try:
         cookies = open(cookiepath, 'r').readline()
         #print(cookies)
     except:
         print('I am hungry, please give me your Cookie!')
-        exit()
-    
+        exit()    
+    #Get filename
+    filename = file2Upload.split('/')[-1].strip()
+    #print(filename)
+    if not os.path.isfile(file2Upload):
+        print('Not file!')
+        pass
+    #Calculate Filesize
+    filesize = os.path.getsize(file2Upload)
+    #print(filesize)
     #Fetch UploadUrl
     request_full = urllib.request.Request('http://www.acfun.com/video/createVideo.aspx?type=letv&filesize=' + str(filesize), headers={ 'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36', 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' , 'Cookie': cookies,})
     try:
         response = urllib.request.urlopen(request_full)
     except:
         print('Cannot get response from server!')
+        pass
     data = response.read()
     uploadresponse = json.loads(data.decode('utf-8'))
     if uploadresponse["success"] is 'false':
         print('ERROR: '+ uploadresponse['info'])
         exit()
     #print(uploadresponse['upload_url'])
-    
     #make filename
     remote_name = uploadresponse['sourceId'] + '|' + str(filesize)
     status_url = uploadresponse['progress_url']
@@ -72,7 +72,7 @@ def upload(file2Upload):
     #start upload
     upload_url = str(uploadresponse['upload_url'])
     #print(upload_url)
-    os.system('curl -F \"file=@'+filename+'\"  \"'+upload_url+'\"')
+    os.system('curl   -F \"file=@'+filename+'\"  \"'+upload_url+'\" | cat #')
     print('Hope everything is fine. '+source_id+'\n')
     vu_list.append([filename, source_id])
 
@@ -96,7 +96,5 @@ if __name__=='__main__':
         print('Uploading '+ str(i)+' in '+str(total_file_num)+' files...')
         upload(name)
     for media in vu_list:
-        check_upload(media[1])
-    for vu in vu_list:
-        print(vu[0]+' : '+vu[1])
+        print(media[0] + ',' + media[1] + ','+check_upload(media[1]))
 
