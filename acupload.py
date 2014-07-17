@@ -53,7 +53,7 @@ def upload(file2Upload):
     filesize = os.path.getsize(file2Upload)
     #print(filesize)
     #Fetch UploadUrl
-    request_full = urllib.request.Request('http://www.acfun.com/video/createVideo.aspx?type=letv&filesize=' + str(filesize), headers={ 'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36', 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' , 'Cookie': cookies,})
+    request_full = urllib.request.Request('http://www.acfun.tv/video/createVideo.aspx?type=letv&filesize=' + str(filesize), headers={ 'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36', 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' , 'Cookie': cookies,})
     try:
         response = urllib.request.urlopen(request_full)
     except:
