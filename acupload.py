@@ -18,7 +18,6 @@ cookiepath = './accookies'
 global vu_list
 vu_list = []
 
-
 #----------------------------------------------------------------------
 def check_upload(source_id):
     """"""
@@ -73,7 +72,7 @@ def upload(file2Upload):
     upload_url = str(uploadresponse['upload_url'])
     #print(upload_url)
     os.system('curl   -F \"file=@'+filename+'\"  \"'+upload_url+'\" | cat #')
-    print('Hope everything is fine. '+source_id+'\n')
+    print('\n'+'Hope everything is fine. '+source_id)
     vu_list.append([filename, source_id])
 
 #----------------------------------------------------------------------
@@ -83,6 +82,9 @@ def cmd_exists(cmd):
 
 #----------------------------------------------------------------------
 if __name__=='__main__':
+    #Test sys encoding
+    if not sys.getdefaultencoding() is 'utf-8':
+        os.system('export LC_ALL="en_US.UTF-8"')
     #Test curl
     if not cmd_exists('curl'):
         print ('We need curl to upload your file! Get one with apt-get or yum.')
