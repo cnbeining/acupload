@@ -41,7 +41,7 @@ def upload(file2Upload):
         #print(cookies)
     except:
         print('I am hungry, please give me your Cookie!')
-        exit()    
+        exit()
     #Get filename
     filename = file2Upload.split('/')[-1].strip()
     #print(filename)
@@ -49,10 +49,11 @@ def upload(file2Upload):
         print('Not file!')
         pass
     #Calculate Filesize
-    filesize = os.path.getsize(file2Upload)
+    #Not used to upload extreme large file, may cause problem
+    #filesize = os.path.getsize(file2Upload)
     #print(filesize)
     #Fetch UploadUrl
-    request_full = urllib.request.Request('http://www.acfun.tv/video/createVideo.aspx?type=letv&filesize=' + str(filesize), headers={ 'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36', 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' , 'Cookie': cookies,})
+    request_full = urllib.request.Request('http://www.acfun.tv/video/createVideo.aspx?type=letv&filesize=100000', headers={ 'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36', 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' , 'Cookie': cookies,})
     try:
         response = urllib.request.urlopen(request_full)
     except:
@@ -78,7 +79,7 @@ def upload(file2Upload):
 #----------------------------------------------------------------------
 def cmd_exists(cmd):
     return subprocess.call("type " + cmd, shell=True, 
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
 
 #----------------------------------------------------------------------
 if __name__=='__main__':
@@ -89,7 +90,7 @@ if __name__=='__main__':
     if not cmd_exists('curl'):
         print ('We need curl to upload your file! Get one with apt-get or yum.')
         exit()
-    
+
     total_file_num = len(sys.argv[1:])
     i = 0
     for name in sys.argv[1:]:
@@ -97,6 +98,6 @@ if __name__=='__main__':
         i = i + 1
         print('Uploading '+ str(i)+' in '+str(total_file_num)+' files...')
         upload(name)
+    #os.system('export LC_ALL="en_US.UTF-8"')
     for media in vu_list:
         print(media[0] + ',' + media[1] + ','+check_upload(media[1]))
-
