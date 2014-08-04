@@ -56,7 +56,7 @@ def upload(file2Upload):
     request_full = urllib.request.Request('http://www.acfun.tv/video/createVideo.aspx?type=letv&filesize=100000', headers={ 'User-Agent' : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36', 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' , 'Cookie': cookies,})
     try:
         response = urllib.request.urlopen(request_full)
-    except:
+    except Exception:
         print('Cannot get response from server!')
         pass
     data = response.read()
