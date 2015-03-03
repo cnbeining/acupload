@@ -16,7 +16,7 @@ import logging
 import traceback
 
 global VER
-VER = '0.04 Py3'
+VER = '0.05 Py3'
 global cookiepath
 cookiepath = './accookies'
 global vu_list
@@ -27,11 +27,9 @@ ACUPLOAD_UA = 'AcUpload / ' + str(VER) + ' (cnbeining@gmail.com)'
 #----------------------------------------------------------------------
 def check_upload(source_id):
     """"""
-    str2Hash = 'cfflashformatjsonran0.7214574650861323uu2d8c027396ver2.1vu' + source_id + 'bie^#@(%27eib58'
-    sign = hashlib.md5(str2Hash.encode('utf-8')).hexdigest()
-    request_info = urllib.request.Request('http://api.letvcloud.com/gpc.php?&sign='+sign+'&cf=flash&vu='+source_id+'&ver=2.1&ran=0.7214574650861323&qr=2&format=json&uu=2d8c027396')
+    request_info = urllib2.Request('http://api.letvcloud.com/gpc.php?&sign=signxxxxx&cf=html5&vu='+source_id+'&ver=2.1&ran=0.6220391783863306&qr=2&format=xml&uu=a04808d307')
     try:
-        response = urllib.request.urlopen(request_info)
+        response = urllib2.urlopen(request_info)
         data = response.read()
         return json.loads(data.decode('utf-8'))['message']
     except:
