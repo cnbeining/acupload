@@ -57,6 +57,8 @@ Misc
 
 历史
 ----
+0.05: 紧急处理uu限制
+
 0.04：加入代理；加入cookie文件设置；几乎重写了所有模块；巨量错误处理；换自己的UA；显示服务器IP；可选检验
 
 0.03：可以上传巨大文件
@@ -69,6 +71,6 @@ Misc
 
 0.01：第一个版本
 #### `vu` 的用法
-* <http://yuntv.letv.com/bcloud.swf?uu=iamuseless&vu=cd09b2f515>
+* <http://yuntv.letv.com/bcloud.swf?uu=！！！！！！！！&vu=cd09b2f515>
 * `[localup]cd09b2f515[/localup]`
 * 乐视云视频 - cd09b2f515

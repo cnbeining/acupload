@@ -17,7 +17,7 @@ import traceback
 from io import open
 
 global VER
-VER = u'0.04 Py3'
+VER = u'0.05 Py2'
 global cookiepath
 cookiepath = u'./accookies'
 global vu_list
@@ -28,9 +28,7 @@ ACUPLOAD_UA = u'AcUpload / ' + unicode(VER) + u' (cnbeining@gmail.com)'
 #----------------------------------------------------------------------
 def check_upload(source_id):
     u""""""
-    str2Hash = u'cfflashformatjsonran0.7214574650861323uu2d8c027396ver2.1vu' + source_id + u'bie^#@(%27eib58'
-    sign = hashlib.md5(str2Hash.encode(u'utf-8')).hexdigest()
-    request_info = urllib2.Request(u'http://api.letvcloud.com/gpc.php?&sign='+sign+u'&cf=flash&vu='+source_id+u'&ver=2.1&ran=0.7214574650861323&qr=2&format=json&uu=2d8c027396')
+    request_info = urllib2.Request(u'http://api.letvcloud.com/gpc.php?&sign=signxxxxx&cf=html5&vu='+source_id+'&ver=2.1&ran=0.6220391783863306&qr=2&format=xml&uu=a04808d307')
     try:
         response = urllib2.urlopen(request_info)
         data = response.read()
