@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #coding:utf-8
 # Author:  Beining --<ACICFG>
-# Purpose:  Upload to Letvcloud via Acfun's API
+# Purpose:  Upload to Letvcloud/Dnion via Acfun's API
 # Created: 07/17/2014
 
 
-import urllib.request
+import urllib.request, urllib.error, urllib.parse, urllib.request, urllib.parse, urllib.error
 import sys
 import os
 import json
@@ -14,9 +14,10 @@ import hashlib
 import getopt
 import logging
 import traceback
+from io import open
 
 global VER
-VER = '0.05 Py3'
+VER = '0.06 Py2'
 global cookiepath
 cookiepath = './accookies'
 global vu_list
@@ -27,9 +28,9 @@ ACUPLOAD_UA = 'AcUpload / ' + str(VER) + ' (cnbeining@gmail.com)'
 #----------------------------------------------------------------------
 def check_upload(source_id):
     """"""
-    request_info = urllib2.Request('http://api.letvcloud.com/gpc.php?&sign=signxxxxx&cf=html5&vu='+source_id+'&ver=2.1&ran=0.6220391783863306&qr=2&format=xml&uu=a04808d307')
+    request_info = urllib.request.Request('http://api.letvcloud.com/gpc.php?&sign=signxxxxx&cf=html5&vu='+source_id+'&ver=2.1&ran=0.6220391783863306&qr=2&format=xml&uu=a04808d307')
     try:
-        response = urllib2.urlopen(request_info)
+        response = urllib.request.urlopen(request_info)
         data = response.read()
         return json.loads(data.decode('utf-8'))['message']
     except:
@@ -88,7 +89,7 @@ class NotFileException(Exception):
         return repr(self.value)
 
 #----------------------------------------------------------------------
-def upload(file2Upload, proxytype = '', proxy_address = '', curl_args = '', cookies = ''):
+def upload(file2Upload, proxytype = '', proxy_address = '', curl_args = '', cookies = '', source = ''):
     """"""
     #Read Cookie.....Damn it I didn't have my supper!
     #Damn why I still didn't have my supper when I edit it 6 months later!!!!!!!!!
@@ -102,7 +103,12 @@ def upload(file2Upload, proxytype = '', proxy_address = '', curl_args = '', cook
     filesize = os.path.getsize(file2Upload)
     #print(filesize)
     #Fetch UploadUrl
-    request_full = urllib.request.Request('http://www.acfun.tv/video/createVideo.aspx?type=letv&filesize=100000', headers={ 'User-Agent' : ACUPLOAD_UA, 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' , 'Cookie': cookies,})
+    
+    #handle error again
+    if source not in ['letv', 'zhuzhan']:
+        raise ValueError('Invalid Source!')
+    
+    request_full = urllib.request.Request('http://www.acfun.tv/video/createVideo.aspx?type={source}&filesize=100000', headers={ 'User-Agent' : ACUPLOAD_UA, 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' , 'Cookie': cookies,}, source = source)
     try:
         response = urllib.request.urlopen(request_full)
     except Exception:
@@ -115,16 +121,24 @@ def upload(file2Upload, proxytype = '', proxy_address = '', curl_args = '', cook
     #print(uploadresponse['upload_url'])
     try:
         #make filename
-        remote_name = uploadresponse['sourceId'] + '|' + str(filesize)
-        status_url = uploadresponse['progress_url']
-        source_id = uploadresponse['sourceId']
+        #become invalid for Dnion
+        #remote_name = uploadresponse[u'sourceId'] + u'|' + unicode(filesize)
+        #status_url = uploadresponse[u'progress_url']
+        
+        if source == 'letv':
+            source_id = uploadresponse['sourceId']
+        elif source == 'zhuzhan':
+            videoId = uploadresponse['videoId']
+            #hack for logging
+            source_id = videoId
+            
         #start upload
         upload_url = str(uploadresponse['upload_url'])
     except KeyError:
         logging.error('Cannot decode this one!')
         raise LetvUploadAPICannotReadException('Cannot decode this one!')
     #print(upload_url)
-    print('Upload server IP address: ' + status_url.split('/')[2])
+    print(('Upload server IP address: ' + status_url.split('/')[2]))
     proxy_args = ''
     if proxytype == 's':
         proxy_args = '--socks5 "{proxy_address}"'.format(proxy_address = proxy_address)
@@ -134,7 +148,7 @@ def upload(file2Upload, proxytype = '', proxy_address = '', curl_args = '', cook
     #print(curl_cmd)
     #os.system('curl -A \'\'  -F \"file=@'+filename+'\"  \"'+upload_url+'\" | cat #')
     os.system(curl_cmd)
-    print('\n' + 'Hope everything is fine. {filename} , {source_id}'.format(filename = filename, source_id = source_id))
+    print(('\n' + 'Hope everything is fine. {filename} , {source_id}'.format(filename = filename, source_id = source_id)))
     vu_list.append([filename, source_id])
 
 #----------------------------------------------------------------------
@@ -164,6 +178,7 @@ def usage():
     -e/examine: Default: 0
         If enabled, acupload will examine all the uploads via the API.
         May return 404 if the speed is too fast.
+        Only works with Letvcloud.
     
     -c/cookie: Default:'./accookies'
         Set the path of cookie.
@@ -179,7 +194,12 @@ def usage():
         127.0.0.1:8080
     
     -a/curl-args: Default: Blank
-        Other arguments you want ot put on curl.''')
+        Other arguments you want ot put on curl.
+        
+    -s/source: Default: zhuzhan
+    zhuzhan    / letv
+    Dnion cloud/Letvcloud
+    ''')
 
 #----------------------------------------------------------------------
 def read_cookie(cookiepath):
@@ -199,7 +219,7 @@ def read_cookie(cookiepath):
 if __name__=='__main__':
     #Test sys encoding
     IS_EXAMINE = 0
-    proxytype, proxy_address, curl_args= '', '', ''
+    proxytype, proxy_address, curl_args, source= '', '', '', 'zhuzhan'
     if not sys.getdefaultencoding() is 'utf-8':
         os.system('export LC_ALL="en_US.UTF-8"')
     #Test curl
@@ -209,8 +229,8 @@ if __name__=='__main__':
         exit()
     argv_list = sys.argv[1:]
     try:
-        opts, args = getopt.getopt(argv_list, "hec:t:p:a:",
-                                   ['help', "examine", 'cookie=', 'proxy-type=', 'proxy-address=', 'curl-args='])
+        opts, args = getopt.getopt(argv_list, "hec:t:p:a:s:",
+                                   ['help', "examine", 'cookie=', 'proxy-type=', 'proxy-address=', 'curl-args=', 'source='])
     except getopt.GetoptError:
         usage()
         exit()
@@ -232,9 +252,14 @@ if __name__=='__main__':
             proxy_address = a
         if o in ('-a', '--curl-args'):
             curl_args = a
+        if o in ('-s', '--source'):
+            source = a
     total_file_num = len(args)
     if total_file_num == 0:
         logging.fatal('No input file to upload!')
+        exit()
+    if not source in ['letv', 'zhuzhan']:
+        logging.fatal('Invalid source!')
         exit()
     try:
         #move here to avoid reading it multiple times
@@ -247,11 +272,11 @@ if __name__=='__main__':
     for file2Upload in args:
         #print(name)
         i = i + 1
-        print('Uploading '+ str(i)+' in '+str(total_file_num)+' files...')
+        print(('Uploading '+ str(i)+' in '+str(total_file_num)+' files...'))
         try:
-            upload(file2Upload, proxytype= proxytype, proxy_address= proxy_address, curl_args = curl_args, cookies = cookies)
+            upload(file2Upload, proxytype= proxytype, proxy_address= proxy_address, curl_args = curl_args, cookies = cookies, source = source)
         except Exception as e:
-            print('ERROR: AcUpload failed: %s' % e)
+            print(('ERROR: AcUpload failed: %s' % e))
             print('       If you think this should not happen, please open a issue at https://github.com/cnbeining/acupload/issues .')
             print('       Make sure you delete all the sensive data before you post it publicly.')
             traceback.print_exc()
@@ -262,12 +287,12 @@ if __name__=='__main__':
         logging.error('Cannot get upload URL due to lack of cookie!')
         exit()
     #makes this selectable
-    if IS_EXAMINE == 1:
+    if IS_EXAMINE == 1 and source == 'letv':
         for media in vu_list:
             try:
-                print(media[0] + ',' + media[1] + ','+check_upload(media[1]))
+                print((media[0] + ',' + media[1] + ','+check_upload(media[1])))
             except Exception as e:
-                print('ERROR: AcUpload examination failed: %s' % e)
+                print(('ERROR: AcUpload examination failed: %s' % e))
                 print('       If you think this should not happen, please open a issue at https://github.com/cnbeining/acupload/issues .')
                 print('       Make sure you delete all the sensive data before you post it publicly.')
                 traceback.print_exc()
