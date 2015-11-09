@@ -13,6 +13,15 @@ cookie文件名是./accookies  .
 
 格式：`Hm_lvt_49129538199e82fd3d7af**********=1398******; bdshare_firstime=*****66321693; Hm_lvt_bc75b9260fe72ee**********=139826***; auth_key=******; auth_key_ac_sha1=-*****; ac_username=****; ac_userimg=http%3A%2F%2Fstatic.acfun.com%2Fdotnet%2F20120923%2Fstyle%2Fimage%2Favatar.jpg; ac_member_guide=0%2C0%2*****; clientlanguage=zh_CN`
 
+    AcUpload
+    
+    https://github.com/cnbeining/Biligrab
+    http://www.cnbeining.com/
+    
+    Beining@ACICFG
+    
+    Usage:
+    
     python3 acupload.py (-h/--help) (-e/--examine) (-c/--cookie ./cookiepath) 
                         (-t/--proxy-type [h/s]) (-p/--proxy-address 127.0.0.1:8080)
                         (-a/--curl-args -V)
@@ -23,6 +32,7 @@ cookie文件名是./accookies  .
     -e/examine: Default: 0
         If enabled, acupload will examine all the uploads via the API.
         May return 404 if the speed is too fast.
+        Only works with Letvcloud.
     
     -c/cookie: Default:'./accookies'
         Set the path of cookie.
@@ -39,6 +49,10 @@ cookie文件名是./accookies  .
     
     -a/curl-args: Default: Blank
         Other arguments you want ot put on curl.
+        
+    -s/source: Default: zhuzhan
+    zhuzhan    / letv
+    Dnion cloud/Letvcloud
 
 
 文件大小是胡写的，理论上可以上传巨大文件。但是具体啥样就不知道了。死了别找我。
@@ -57,6 +71,8 @@ Misc
 
 历史
 ----
+0.06: 加入Dnion云
+
 0.05: 紧急处理uu限制
 
 0.04：加入代理；加入cookie文件设置；几乎重写了所有模块；巨量错误处理；换自己的UA；显示服务器IP；可选检验

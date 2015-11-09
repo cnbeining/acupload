@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #coding:utf-8
 # Author:  Beining --<ACICFG>
-# Purpose:  Upload to Letvcloud via Acfun's API
+# Purpose:  Upload to Letvcloud/Dnion via Acfun's API
 # Created: 07/17/2014
 
 
@@ -17,7 +17,7 @@ import traceback
 from io import open
 
 global VER
-VER = u'0.05 Py2'
+VER = u'0.06 Py2'
 global cookiepath
 cookiepath = u'./accookies'
 global vu_list
@@ -89,7 +89,7 @@ class NotFileException(Exception):
         return repr(self.value)
 
 #----------------------------------------------------------------------
-def upload(file2Upload, proxytype = u'', proxy_address = u'', curl_args = u'', cookies = u''):
+def upload(file2Upload, proxytype = u'', proxy_address = u'', curl_args = u'', cookies = u'', source = u''):
     u""""""
     #Read Cookie.....Damn it I didn't have my supper!
     #Damn why I still didn't have my supper when I edit it 6 months later!!!!!!!!!
@@ -103,7 +103,12 @@ def upload(file2Upload, proxytype = u'', proxy_address = u'', curl_args = u'', c
     filesize = os.path.getsize(file2Upload)
     #print(filesize)
     #Fetch UploadUrl
-    request_full = urllib2.Request(u'http://www.acfun.tv/video/createVideo.aspx?type=letv&filesize=100000', headers={ u'User-Agent' : ACUPLOAD_UA, u'Cache-Control': u'no-cache', u'Pragma': u'no-cache' , u'Cookie': cookies,})
+    
+    #handle error again
+    if source not in ['letv', 'zhuzhan']:
+        raise ValueError('Invalid Source!')
+    
+    request_full = urllib2.Request(u'http://www.acfun.tv/video/createVideo.aspx?type={source}&filesize=100000', headers={ u'User-Agent' : ACUPLOAD_UA, u'Cache-Control': u'no-cache', u'Pragma': u'no-cache' , u'Cookie': cookies,}, source = source)
     try:
         response = urllib2.urlopen(request_full)
     except Exception:
@@ -116,9 +121,17 @@ def upload(file2Upload, proxytype = u'', proxy_address = u'', curl_args = u'', c
     #print(uploadresponse['upload_url'])
     try:
         #make filename
-        remote_name = uploadresponse[u'sourceId'] + u'|' + unicode(filesize)
-        status_url = uploadresponse[u'progress_url']
-        source_id = uploadresponse[u'sourceId']
+        #become invalid for Dnion
+        #remote_name = uploadresponse[u'sourceId'] + u'|' + unicode(filesize)
+        #status_url = uploadresponse[u'progress_url']
+        
+        if source == 'letv':
+            source_id = uploadresponse[u'sourceId']
+        elif source == 'zhuzhan':
+            videoId = uploadresponse[u'videoId']
+            #hack for logging
+            source_id = videoId
+            
         #start upload
         upload_url = unicode(uploadresponse[u'upload_url'])
     except KeyError:
@@ -165,6 +178,7 @@ def usage():
     -e/examine: Default: 0
         If enabled, acupload will examine all the uploads via the API.
         May return 404 if the speed is too fast.
+        Only works with Letvcloud.
     
     -c/cookie: Default:'./accookies'
         Set the path of cookie.
@@ -180,7 +194,12 @@ def usage():
         127.0.0.1:8080
     
     -a/curl-args: Default: Blank
-        Other arguments you want ot put on curl.'''
+        Other arguments you want ot put on curl.
+        
+    -s/source: Default: zhuzhan
+    zhuzhan    / letv
+    Dnion cloud/Letvcloud
+    '''
 
 #----------------------------------------------------------------------
 def read_cookie(cookiepath):
@@ -200,7 +219,7 @@ def read_cookie(cookiepath):
 if __name__==u'__main__':
     #Test sys encoding
     IS_EXAMINE = 0
-    proxytype, proxy_address, curl_args= u'', u'', u''
+    proxytype, proxy_address, curl_args, source= u'', u'', u'', u'zhuzhan'
     if not sys.getdefaultencoding() is u'utf-8':
         os.system(u'export LC_ALL="en_US.UTF-8"')
     #Test curl
@@ -210,8 +229,8 @@ if __name__==u'__main__':
         exit()
     argv_list = sys.argv[1:]
     try:
-        opts, args = getopt.getopt(argv_list, u"hec:t:p:a:",
-                                   [u'help', u"examine", u'cookie=', u'proxy-type=', u'proxy-address=', u'curl-args='])
+        opts, args = getopt.getopt(argv_list, u"hec:t:p:a:s:",
+                                   [u'help', u"examine", u'cookie=', u'proxy-type=', u'proxy-address=', u'curl-args=', u'source='])
     except getopt.GetoptError:
         usage()
         exit()
@@ -233,9 +252,14 @@ if __name__==u'__main__':
             proxy_address = a
         if o in (u'-a', u'--curl-args'):
             curl_args = a
+        if o in (u'-s', u'--source'):
+            source = a
     total_file_num = len(args)
     if total_file_num == 0:
         logging.fatal(u'No input file to upload!')
+        exit()
+    if not source in ['letv', 'zhuzhan']:
+        logging.fatal(u'Invalid source!')
         exit()
     try:
         #move here to avoid reading it multiple times
@@ -250,7 +274,7 @@ if __name__==u'__main__':
         i = i + 1
         print (u'Uploading '+ unicode(i)+u' in '+unicode(total_file_num)+u' files...')
         try:
-            upload(file2Upload, proxytype= proxytype, proxy_address= proxy_address, curl_args = curl_args, cookies = cookies)
+            upload(file2Upload, proxytype= proxytype, proxy_address= proxy_address, curl_args = curl_args, cookies = cookies, source = source)
         except Exception, e:
             print (u'ERROR: AcUpload failed: %s' % e)
             print u'       If you think this should not happen, please open a issue at https://github.com/cnbeining/acupload/issues .'
@@ -263,7 +287,7 @@ if __name__==u'__main__':
         logging.error(u'Cannot get upload URL due to lack of cookie!')
         exit()
     #makes this selectable
-    if IS_EXAMINE == 1:
+    if IS_EXAMINE == 1 and source == 'letv':
         for media in vu_list:
             try:
                 print (media[0] + u',' + media[1] + u','+check_upload(media[1]))
